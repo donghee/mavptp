@@ -100,16 +100,6 @@ void handle_message_ptp_timesync(mavlink_message_t *msg)
 
 	// DELAY_REQUEST
 	if (tsync.msg_type == PTP_DELAY_REQUEST) {
-		// timespec t4 = {}; // TEST t4 5.4
-		// t4.tv_sec = 5;
-		// t4.tv_nsec = 400 * NSEC_PER_MSEC;
-		// timespec t4 = {}; // TEST t4 11.2
-		// t4.tv_sec = 11;
-		// t4.tv_nsec = 200 * NSEC_PER_MSEC;
-		// timespec t4 = {}; // TEST t4 11.2
-		// t4.tv_sec = 11;
-		// t4.tv_nsec = 200 * NSEC_PER_MSEC;
-
 		struct timespec t4 = {};
 		clock_gettime(CLOCK_REALTIME, &t4);
 
@@ -140,19 +130,16 @@ void handle_message_timesync(mavlink_message_t *msg)
 
 	struct timespec tv = {};
 	clock_gettime(CLOCK_REALTIME, &tv);
-	// uint64_t now_ns = (uint64_t)tv.tv_sec * 1E9 + (uint64_t)tv.tv_nsec;
 	uint64_t now_ns = (uint64_t)tv.tv_sec * NSEC_PER_SEC + (uint64_t)tv.tv_nsec - time_offset_ns;
 
 	if (tsync.tc1 == 0) {
 		send_message_timesync(msg->sysid, msg->compid, now_ns, tsync.ts1);
-		// send_message_timesync(msg->sysid, msg->compid, 0, tsync.ts1);
 		printf("[TIMESYNC] now_ns:%llu tsync.ts1:%llu \n", now_ns, tsync.ts1);
 
 	} else {
 		int64_t _offset_ns = (int64_t)(tsync.ts1 + now_ns - tsync.tc1 * 2) / 2 ;
 		printf("[TIMESYNC] offset_ns:%llu \n", _offset_ns);
 		printf("[TIMESYNC] time_off_ns:%llu \n", time_offset_ns);
-		// send_message_timesync(msg->sysid, msg->compid, tsync.tc1, tsync.ts1);
 	}
 }
 
@@ -171,9 +158,6 @@ void handle_message_system_time(mavlink_message_t *msg)
 		printf("time_offset_ns :%llu \n", time_offset_ns);
 	}
 
-	// printf("tv_usec :%llu \n", onboard_tv_usec);
-	// printf("[SYSTEM_TIME] time_unix_usec :%llu \n", fc_tv_usec);
-	// printf("onboard - fc offset: %llu us \n", (onboard_tv_usec - fc_tv_usec));
 }
 
 
@@ -213,10 +197,6 @@ int main(int argc, const char *argv[])
 					mavlink_system.sysid = msg.sysid;
 					mavlink_system.compid = msg.compid;
 
-					// if (msg.msgid == MAVLINK_MSG_ID_TIMESYNC) {
-					// 	handle_message_timesync(&msg);
-					// }
-
 					if (msg.msgid == MAVLINK_MSG_ID_SYSTEM_TIME) {
 						handle_message_system_time(&msg);
 					}
@@ -234,26 +214,13 @@ int main(int argc, const char *argv[])
 				struct timespec t1 = {};
 				clock_gettime(CLOCK_REALTIME, &t1);
 
-				// struct timespec t1 = {}; // TEST t1 0.0
-				// t1.tv_sec = 0;
-				// t1.tv_nsec = 0;
-
-				// struct timespec t1 = {}; // TEST t1 10.0
-				// t1.tv_sec = 10;
-				// t1.tv_nsec = 0;
-
-				// struct timespec t1 = {}; // TEST t1 10.0
-				// t1.tv_sec = 10;
-				// t1.tv_nsec = 0;
-
 				// printf("[PTP TIMESYNC] SYNC\n");
 				send_message_ptp_timesync(mavlink_system.sysid,
 							  mavlink_system.compid, 0, PTP_SYNC,
 							  0, 0);
 				usleep(1000);  // 1ms
-				// usleep(200 * 1000);  // 200ms
 
-				// FOLLOW_UP t1(0.0)
+				// FOLLOW_UP 
 				send_message_ptp_timesync(mavlink_system.sysid,
 							  mavlink_system.compid, 1, PTP_FOLLOW_UP,
 							  t1.tv_sec, t1.tv_nsec);
@@ -266,4 +233,3 @@ int main(int argc, const char *argv[])
 
 	return 0;
 }
-
