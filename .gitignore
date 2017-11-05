@@ -7,3 +7,5 @@ tests
 test*
 timesync
 serial_port_repeater    
+.*swp
+.*sw0
